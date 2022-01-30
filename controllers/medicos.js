@@ -1,4 +1,5 @@
 const { response } = require("express");
+const ObjectId = require('mongodb').ObjectID;
 
 const Medico = require('../models/medico');
 
@@ -10,6 +11,35 @@ const getMedicos = async(req, res = response) => {
         ok: true,
         medicos
     });
+}
+
+const getMedico = async(req, res = response) => {
+
+    const id = req.params.id;
+
+    try {
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Medico no encontrado por id'
+            });
+        }
+
+        const medico = await Medico.findById(id).populate('usuario', 'nombre img').populate('hospital', 'nombre img');
+        res.json({
+            ok: true,
+            medico
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado... revisar logs'
+        });
+    }
+
+
 }
 
 const creaMedico = async(req, res = response) => {
@@ -102,6 +132,7 @@ const borrarMedico = async(req, res = response) => {
 
 module.exports = {
     getMedicos,
+    getMedico,
     creaMedico,
     actualizarMedico,
     borrarMedico
